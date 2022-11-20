@@ -59,12 +59,13 @@ class Student:
 [^1]: ドメインモデルには値オブジェクトとエンティティがありますが、ここでは割愛します。
 :::
 
-### リポジトリ
-リポジトリではドメインモデルが扱わなかったデータの取得や永続化といった処理を行います。ドメインモデルのメソッドは自身のインスタンスの状態を変更しますが、そういった変更の結果得られたある状態をもつドメインモデルをDB等に永続化するのがリポジトリの役割です。またDB等に永続されたデータからある状態を持つドメインモデルの取得を行うのもリポジトリの役割です。
+:::details リポジトリ
+リポジトリではドメインモデルが扱わなかったデータの取得や永続化といった処理を行います。ドメインモデルのメソッドは自身のインスタンスの状態を変更しますが、その結果をDB等に永続化するのがリポジトリの役割です。またDB等に永続されたデータからある状態を持つドメインモデルの取得を行うのもリポジトリの役割です。
 
-とりあえず今回は各生徒は兼部はできないという設定にするとDBのテーブルは以下のようにします。
+ではドメインモデルの説明でとりあげた`Club`と`Student`の例をもとにリポジトリの具体例を以下で説明します。今回は簡単のため、各生徒は兼部はできないという設定にし、`Club`と`Student`は1:nの関係とします。DBには以下のような`clubs`テーブルと`students`テーブルがあるとします。
 
 - clubsテーブル
+
 	| id | name |
 	| ---- | ---- |
 	| club_id1 | 野球部 |
@@ -77,16 +78,60 @@ class Student:
 	| student_id2 | ヴァン・ヘイレン | club_id2 |
 	| student_id3 | 平沢唯 | club_id2 |
 
-ここで実際に
+このとき、リポジトリの実装は以下のようになります。
+
+
 ```Python
 class ClubRepository:
     def __init__(self, db):
         self.db = db
 
-    def get(self, club_id):
-        club = self.db.get(club_id)
-        return Club(club.name)
+    # club_idに対応するClubのドメインモデルを取得する
+    def get(self, club_id) -> Optional[Club]:
+        query = (
+            "SELECT clubs.id, clubs.name, students.id "
+            "FROM clubs "
+            "LEFT JOIN students "
+            "ON clubs.id = students.club_id "
+            "WHERE clubs.id = %s"
+        )
+        with self.db.cursor() as cursor:
+            cursor.execute(query, (club_id,))
+
+            rows = list(cursor.fetchall())
+            if len(rows) == 0:
+                return None
+
+            student_ids = []
+            for (club_id, club_name, student_id) in :
+                student_ids.append(student_id)
+
+        return Club(id=club_id, name=club_name, student_ids=student_ids)
+
+    # ClubのドメインモデルをDBに永続化する
+    def save(self, club):
+        old_club = self.get(club.id)
+        with self.db.cursor() as cursor:
+            query = (
+                "INSERT INTO clubs "
+                "VALUES (%s, %s) "
+                "ON DUPLICATE KEY UPDATE name=%s"
+            )
+            cursor.execute(query, (club.id, club.name, club.name))
+
+            query = (
+                "UPDATE students "
+                "SET club_id=%s "
+                "WHERE student_id in (" + ",".join(["%s"] * len(club.student_ids)) + ")"
+            )
+            cursor.execute(query, tuple(old_club.student_ids))
+
+            cursor.commit()
+
 ```
+上記リポジトリでは`get`メソッドである`club_id`を持つ`Club`の取得、`save`メソッドである`Club`インスタンスの永続化を行っています。
+
+:::
 
 
 ### アプリケーションサービス
