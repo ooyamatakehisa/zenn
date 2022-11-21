@@ -20,8 +20,10 @@ DDDの解説記事はよくあるのですが、DDDにCQRSを導入しなかっ�
 ![](https://storage.googleapis.com/zenn-user-upload/36fc66d6b502-20221122.png)
 今回は学校の部活管理システムを構築することとし、上図のように部活`Club`と生徒`Student`を考えます。部活は複数の生徒を持ちますが、生徒が一人もいなくても成立するものとします。学生は部活に入らなくてもいいですが、入る場合は複数の部活には入れないものとします。
 
-:::details ドメインモデル
-DDDでは開発を行うソフトウェアの対象領域（ドメイン）の実体をオブジェクト指向のようにクラス等に落とし込み、その振る舞いを表現します。例えば学校の部活管理システムを構築する際、各部活動や生徒といった現実世界の実体をそのまま以下のようなクラスに落とし込みます。
+# DDDにおける実装
+本章ではドメイン駆動設計(DDD)とCQRSの説明を簡単に行います。DDDをご存じの方はこの章は飛ばして[次の章](#CQRSを使用しないDDDの問題点)を御覧ください。
+
+### ドメインモデル
 ```Python
 # 部活
 class Club:
@@ -50,8 +52,12 @@ class Student:
     def __init__(self, id, name):
         self.id = id
         self.name = name
-
 ```
+本記事では部活動`Club`と生徒`Student`は別集約とし、`Club`は生徒のIDのリストを持つこととします。
+
+:::details ドメインモデルとは
+DDDでは開発を行うソフトウェアの対象領域（ドメイン）の実体をオブジェクト指向のようにクラス等に落とし込み、その振る舞いを表現します。今回は、学校の部活管理システムを構築するので、各部活動や生徒といった現実世界の実体をそのまま以下のようなクラスに落とし込みます。
+
 クラスに「振る舞いを表現する」というのは、例えば上記では以下のようなことを指します。
 - ある学生が部活に入部することを`join`メソッドで表現
 - 部活には人数の上限があることを`join`メソッドのif文チェックで表現
@@ -61,28 +67,10 @@ class Student:
 [^1]: ドメインモデルには値オブジェクトとエンティティがありますが、ここでは割愛します。
 :::
 
-:::details リポジトリ
-リポジトリではドメインモデルが扱わなかったデータの取得や永続化といった処理を行います。ドメインモデルのメソッドは自身のインスタンスの状態を変更しますが、その結果をDB等に永続化するのがリポジトリの役割です。またDB等に永続されたデータからある状態を持つドメインモデルの取得を行うのもリポジトリの役割です。
+:::details 集約とは
+:::
 
-ではドメインモデルの説明でとりあげた`Club`と`Student`の例をもとにリポジトリの具体例を以下で説明します。今回は簡単のため、各生徒は兼部はできないという設定にし、`Club`と`Student`は1:nの関係とします。DBには以下のような`clubs`テーブルと`students`テーブルがあるとします。
-
-- clubsテーブル
-
-	| id | name |
-	| ---- | ---- |
-	| club_id1 | 野球部 |
-	| club_id2 | 軽音部 |
-
-- studentsテーブル
-	| id | name | club_id |
-	| ---- | ---- | ---- |
-	| student_id1 | 大谷翔平  | club_id1 |
-	| student_id2 | ヴァン・ヘイレン | club_id2 |
-	| student_id3 | 平沢唯 | club_id2 |
-
-このとき、リポジトリの実装は以下のようになります。
-
-
+### リポジトリ
 ```Python
 class ClubRepository:
     def __init__(self, db):
@@ -105,7 +93,7 @@ class ClubRepository:
                 return None
 
             student_ids = []
-            for (club_id, club_name, student_id) in :
+            for (club_id, club_name, student_id) in rows:
                 student_ids.append(student_id)
 
         return Club(id=club_id, name=club_name, student_ids=student_ids)
@@ -129,15 +117,42 @@ class ClubRepository:
             cursor.execute(query, tuple(old_club.student_ids))
 
             cursor.commit()
-
 ```
-上記リポジトリでは`get`メソッドである`club_id`を持つ`Club`の取得、`save`メソッドである`Club`インスタンスの永続化を行っています。
+
+:::details リポジトリとは
+リポジトリではドメインモデルが扱わなかったデータの取得や永続化といった処理を行います。ドメインモデルのメソッドは自身のインスタンスの状態を変更しますが、その結果をDB等に永続化するのがリポジトリの役割です。またDB等に永続されたデータからある状態を持つドメインモデルの取得を行うのもリポジトリの役割です。
+
+ではドメインモデルの説明でとりあげた`Club`と`Student`の例をもとにリポジトリの具体例を以下で説明します。今回は簡単のため、各生徒は兼部はできないという設定にし、`Club`と`Student`は1:nの関係とします。DBには以下のような`clubs`テーブルと`students`テーブルがあるとします。
+
+- clubsテーブル
+
+	| id | name |
+	| ---- | ---- |
+	| club_id1 | 野球部 |
+	| club_id2 | 軽音部 |
+
+- studentsテーブル
+	| id | name | club_id |
+	| ---- | ---- | ---- |
+	| student_id1 | 大谷翔平  | club_id1 |
+	| student_id2 | ヴァン・ヘイレン | club_id2 |
+	| student_id3 | 平沢唯 | club_id2 |
+
+このとき、リポジトリの実装は以下のようになります。
+
+`get`メソッドがある`club_id`を持つ`Club`の取得、`save`メソッドがある`Club`インスタンスの永続化を行っています。
 
 :::
 
 
-### アプリケーションサービス
+:::details アプリケーションサービス
 ここで上記の
+:::
+
+
+
+:::details CQRS
+:::
 
 # CQRSを使用しないDDDの問題点
 
