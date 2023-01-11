@@ -7,7 +7,7 @@ published: false
 ---
 
 # 概要
-本記事では、設計やデザインパターンを勉強していると出てくる以下の単語たちの関連性をまとめます。
+本記事では、設計やデザインパターンで頻出の以下の単語たちの関連性をまとめます。
 
 - [依存性の注入 (Dependency Injection: DI)](https://ja.wikipedia.org/wiki/%E4%BE%9D%E5%AD%98%E6%80%A7%E3%81%AE%E6%B3%A8%E5%85%A5)
 - [依存性逆転の法則 (Dependency Inversion Principle: DIP)](https://ja.wikipedia.org/wiki/%E4%BE%9D%E5%AD%98%E6%80%A7%E9%80%86%E8%BB%A2%E3%81%AE%E5%8E%9F%E5%89%87)
@@ -15,7 +15,7 @@ published: false
 - デザインパターン
     - [ストラテジーパターン](https://ja.wikipedia.org/wiki/Strategy_%E3%83%91%E3%82%BF%E3%83%BC%E3%83%B3)
     - [デコレーターパターン](https://ja.wikipedia.org/wiki/Decorator_%E3%83%91%E3%82%BF%E3%83%BC%E3%83%B3)
-    - etc
+    - etc...
 - [デリゲート（委譲）](https://ja.wikipedia.org/wiki/%E5%A7%94%E8%AD%B2)
 - [合成](https://en.wikipedia.org/wiki/Object_composition)
 
