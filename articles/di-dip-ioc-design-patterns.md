@@ -64,19 +64,19 @@ IoCの実現方法としてDIがあります。この方式は得に意識しま
 
 :::message
 #### デリゲートとは
-デリゲート（委譲）はいくつかの意味が混在して使われますが、本記事では「あるオブジェクト（Wrapper）のメンバーから、そのオブジェクトのメンバーである別オブジェクト（Wrappee）のメンバーが呼ばれる」という意味でデリゲートという単語を使用します。正確には「デリゲート」はWrappeeのメンバーの評価がWrapper側で行われる場合のことを指しており、本記事で使用する「デリゲート」では、Wrappeeのメンバーの評価がWrappee側で行われるため、正確には「**フォワーディング（転送）**」と呼ばれます[^3]。
+デリゲート（委譲）はいくつかの意味が混在して使われますが、本記事では「あるオブジェクト（Wrapper）のメンバーから、そのオブジェクトのメンバーである別オブジェクト（Wrappee）の対応するメンバーが呼ばれる」という意味でデリゲートという単語を使用します。正確には「デリゲート」はWrappeeのメンバーの評価がWrapper側で行われる場合のことを指しており、本記事で使用する「デリゲート」では、Wrappeeのメンバーの評価がWrappee側で行われるため、正確には「**フォワーディング（転送）**」と呼ばれます[^3]。フォワーディングに関しては「（付録）フォワーディング」で追記します。
 
 
 [^3]: 英語版のwikipediaには[forwarding](https://en.wikipedia.org/wiki/Forwarding_(object-oriented_programming))のページがあり、デリゲートとの違いが述べられています。日本語版では[委譲](https://ja.wikipedia.org/wiki/%E5%A7%94%E8%AD%B2)のページでフォワーディングが（誤って？）説明されています。
 
-なお、英語版wikipediaの[forwarding](https://en.wikipedia.org/wiki/Forwarding_(object-oriented_programming))のページでは、WrapperとWrappeeのメンバーは1:1対応し、同じ責務を持つ（同じインターフェースを実装している）ことも定義の一部となっているようですが、本記事ではこの定義を「**狭義のフォワーディング**」として言及し、デリゲートは単純にWrapperからWrappeeのメンバーが呼ばれていれば良いものとします。これに関しては「（付録）狭義のフォワーディング」で追記します。
+
 
 
 フォワーディングはクラスに限った話ではなく、例えばあるメソッドが内部で別のメソッドを呼んでいてもフォワーディングと呼びます[^4]。継承して子クラスのメソッドから親クラスのメソッドを呼ぶ場合でもフォワーディングの定義は満たしています。
 :::
 
 
-デリゲートは合成の必要条件です。合成は合成されたクラスのメンバーを使うことが目的なので、合成をするなら多くの場合デリゲートをしていることになります。ただし、デリゲートは「クラスのメソッドからそのクラスのメンバーである別クラスのメソッドを呼ぶこと」というオブジェクト指向の文脈で使われることが多く、この文脈では合成はデリゲートの前提となっています。
+デリゲートは合成の必要条件です。合成は合成されたクラスのメンバーを使うことが目的なので、合成をするなら基本的にデリゲートをしていることになります。ただし、デリゲートは「クラスのメソッドからそのクラスのメンバーである別クラスのメソッドを呼ぶこと」というオブジェクト指向の文脈で使われることが多く、この文脈では合成はデリゲートの前提となっています。
 
 ![](/images/di-dip-ioc-design-patterns/delegate.png =350x)
 
@@ -98,25 +98,15 @@ https://fukabori.fm/episode/48
 # （付録）開放/閉鎖原則とデザインパターン
 本記事ではSOLID原則のDである依存性逆転の法則とデザインパターンの関連を説明しました。以下の記事では、SOLID原則のOである開放/閉鎖原則とデザインパターンの関連を説明してあり非常に面白いです。
 
-http://objectclub.jp/community/memorial/homepage3.nifty.com/masarl/article/dp-ocp-2.html
 
 
-# （付録）狭義のフォワーディング
+# （付録）フォワーディング
+デリゲートは、記事によっては、子クラスから親クラスのメンバーを呼ぶことのできる継承と対比されて、フォワーディングの意味で「Wrapperクラスから合成されたWrappeeクラスのメンバーを呼ぶこと」という説明がなされますが、これは正確にはフォワーディングでありません。フォワーディングの定義は「Wrapperのメンバーに**対応する**Wrappeeのメンバーを呼ぶこと」です。
 
-英語版のwikipediaにおける[forwarding](https://en.wikipedia.org/wiki/Forwarding_(object-oriented_programming))の定義は、
+
+実際、英語版のwikipediaにおける[forwarding](https://en.wikipedia.org/wiki/Forwarding_(object-oriented_programming))の定義は、
 >forwarding means that using a member of an object (略) results in actually using the **corresponding** member of a different object
 
 > （訳）ファワーディングは、あるオブジェクトのメンバーを呼ぶと、別オブジェクトの**対応する**メンバーが呼ばれることである
 
-となっています。「対応する」の意味が曖昧なのですが、これは「同じ責務を持つ」ということを意味するのかなと思います。別の言い方をすると、WrapperとWrappeeが同じインターフェースを実装しているということになります。
-
-wikipediaに載っている例は基本的にWrapperとWrappeeのメンバーは同じメソッドを持っており、例として挙げられてるデザインパターンもデコレーターパターンやプロキシパターンなどのWrapperとWrappeeが同じインターフェースを実装しているものばかりのため、wikipediaにおけるフォワーディングの定義は、このようにWrapperとWrappeeのメンバーが1:1対応していることが前提なのかなと思います。つまり、この定義ではある処理の流れの中で合成されたオブジェクトのメンバーを呼ぶこと、例えばストラテジーパターンなどは、フォワーディングとは呼ばないのかなと思います。
-
-論文でのフォワーディングの定義は見つけられなかったのですが、デリゲートに関する論文の以下のような記載から、やはりフォワーディングはWrapperとWrappeeのメンバーが対応していることは前提としているのかなと思います。
-
->  If the object's personal characteristics are not relevant for answering the message, the object forwards the message on to the prototypes to see if one can respond to the message. This process of forwarding is called delegating the massage.
-https://dl.acm.org/doi/pdf/10.1145/28697.28718
-
-> Delegation, as discussed by Lieberman in [1] for a class-free (prototype-based) object model, is originally understood as the automatically forwarding of messages for which the receiving object (the message receiver) has no matching methods to a so-called parent object.
-https://www.researchgate.net/profile/Bo-Jorgensen-5/publication/220901454_Superimposed_Delegation/links/0046351ca8d7de2062000000/Superimposed-Delegation.pdf
-
+となっています。「対応する」が意味するのは、「同じ責務を持つ」ということです。別の言い方をすると、WrapperとWrappeeが同じインターフェースを実装しているということになります。wikipediaにフォワーディングの例として挙げられてるデザインパターンもデコレーターパターン、プロキシパターン、Chain of ResponsibilityパターンなどのWrapperとWrappeeが同じインターフェースを実装しているものになります。このようにフォワーディングでは、WrapperとWrappeeに同じ責務を持った対応するメンバーがあることが前提となります。したがって、単純に合成されたオブジェクトのメンバーを呼ぶケース、例えばストラテジーパターンなどは、フォワーディングとは呼ばないので注意が必要です。
