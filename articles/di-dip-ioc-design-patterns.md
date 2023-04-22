@@ -3,7 +3,7 @@ title: "DIとDIPとIoCとデザインパターンと"
 emoji: "🌏"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["設計", "デザインパターン", "DI", "DIP", "IoC"]
-published: false
+published: true
 ---
 
 # 概要
