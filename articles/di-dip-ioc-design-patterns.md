@@ -36,6 +36,8 @@ DIPを実現させる方法の一つとしてDIがあります。**依存性の�
 
 ![](/images/di-dip-ioc-design-patterns/di.png =500x)
 *図1*
+<!-- https://excalidraw.com/#json=ryPQYHAZ6qG7YU-Hsv8RP,TQzqAMsiom4ESleiDyxTvA -->
+
 
 :::details コード例
 - DI前のコード
